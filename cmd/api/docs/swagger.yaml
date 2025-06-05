@@ -1,0 +1,9 @@
+basePath: /api/v1
+host: localhost:8080
+info:
+  contact: {}
+  description: This project is being developed as a cloud storage
+  title: Go-Storage
+  version: "1.0"
+paths: {}
+swagger: "2.0"

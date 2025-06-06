@@ -5,10 +5,17 @@ import (
 	"time"
 )
 
-func ToDomain(dto RequestRegisterCompanyDto) *domain.Company {
+func ToDomainCreate(dto RequestRegisterCompanyDto) *domain.Company {
 	return &domain.Company{
 		Name:        dto.Name,
 		Description: dto.Desc,
+	}
+}
+
+func ToDomainUpdate(dto RequestUpdateCompanyDto) *domain.Company {
+	return &domain.Company{
+		Name:        dto.Name,
+		Description: dto.Description,
 	}
 }
 
@@ -16,7 +23,7 @@ func ToResponseCompany(company *domain.Company) *ResponseCompanyDto {
 	return &ResponseCompanyDto{
 		Status: "success",
 		Time:   company.CreatedAt,
-		Answer: &CompanyDto{Id: company.ID, Name: company.Name, Path: company.Path},
+		Answer: &CompanyDto{Id: company.ID, Name: company.Name, Path: company.Path, Description: company.Description},
 	}
 }
 
@@ -25,9 +32,10 @@ func ToResponseCompanies(companies []*domain.Company) *ResponseCompaniesDto {
 
 	for index, company := range companies {
 		answerCompanies[index] = &CompanyDto{
-			Id:   company.ID,
-			Name: company.Name,
-			Path: company.Path,
+			Id:          company.ID,
+			Name:        company.Name,
+			Path:        company.Path,
+			Description: company.Description,
 		}
 	}
 

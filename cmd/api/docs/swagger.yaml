@@ -1,9 +1,221 @@
 basePath: /api/v1
+definitions:
+  errors.ErrorResponse:
+    properties:
+      code:
+        type: integer
+      error:
+        type: string
+      message:
+        type: string
+      time:
+        type: string
+    type: object
+  hdCompany.CompanyDto:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      path:
+        type: string
+    type: object
+  hdCompany.RequestRegisterCompanyDto:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    required:
+    - description
+    - name
+    type: object
+  hdCompany.RequestUpdateCompanyDto:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    type: object
+  hdCompany.ResponseCompaniesDto:
+    properties:
+      answer:
+        items:
+          $ref: '#/definitions/hdCompany.CompanyDto'
+        type: array
+      status:
+        type: string
+      time:
+        type: string
+    type: object
+  hdCompany.ResponseCompanyDto:
+    properties:
+      answer:
+        $ref: '#/definitions/hdCompany.CompanyDto'
+      status:
+        type: string
+      time:
+        type: string
+    type: object
+  hdCompany.ResponseDeleteCompanyDto:
+    properties:
+      status:
+        type: string
+      time:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
   description: This project is being developed as a cloud storage
   title: Go-Storage
   version: "1.0"
-paths: {}
+paths:
+  /companies/:
+    get:
+      description: Returns a list of all active companies
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/hdCompany.ResponseCompaniesDto'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      summary: Get all companies
+      tags:
+      - companies
+    post:
+      consumes:
+      - application/json
+      description: Creates a new company and assigns a unique storage path
+      parameters:
+      - description: Company payload
+        in: body
+        name: company
+        required: true
+        schema:
+          $ref: '#/definitions/hdCompany.RequestRegisterCompanyDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/hdCompany.ResponseCompanyDto'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      summary: Register new company
+      tags:
+      - companies
+  /companies/{id}:
+    delete:
+      description: Soft-deletes (deactivates) a company by ID
+      parameters:
+      - description: Company ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/hdCompany.ResponseDeleteCompanyDto'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      summary: Delete company
+      tags:
+      - companies
+    get:
+      description: Returns a company by its UUID
+      parameters:
+      - description: Company ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/hdCompany.ResponseCompanyDto'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      summary: Get company by ID
+      tags:
+      - companies
+    put:
+      consumes:
+      - application/json
+      description: Updates name and/or description of the company
+      parameters:
+      - description: Company ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Fields to update
+        in: body
+        name: company
+        required: true
+        schema:
+          $ref: '#/definitions/hdCompany.RequestUpdateCompanyDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/hdCompany.ResponseCompanyDto'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      summary: Update company
+      tags:
+      - companies
 swagger: "2.0"

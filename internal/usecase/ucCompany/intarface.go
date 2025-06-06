@@ -10,4 +10,5 @@ type UseCaseCompanyInterface interface {
 	GetCompanyById(ctx context.Context, id string) (*domain.Company, error)
 	GetAllCompanies(ctx context.Context) ([]*domain.Company, error)
 	DeleteCompany(ctx context.Context, id string) error
+	UpdateCompany(ctx context.Context, id string, c *domain.Company) (*domain.Company, error)
 }

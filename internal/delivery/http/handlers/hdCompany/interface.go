@@ -7,4 +7,5 @@ type CompanyHandlerInterface interface {
 	GetCompanyById(ctx *gin.Context)
 	GetAllCompanies(ctx *gin.Context)
 	DeleteCompany(ctx *gin.Context)
+	UpdateCompany(ctx *gin.Context)
 }

@@ -25,10 +25,11 @@ func Router(log logger.Logger, db *sql.DB) *gin.Engine {
 	api := r.Group("/api/v1/")
 	company := api.Group("/companies")
 	{
+		company.GET("/", hdCmp.GetAllCompanies)
 		company.POST("/", hdCmp.RegistrationCompany)
 		company.GET("/:id", hdCmp.GetCompanyById)
-		company.GET("/", hdCmp.GetAllCompanies)
 		company.DELETE("/:id", hdCmp.DeleteCompany)
+		company.PUT("/:id", hdCmp.UpdateCompany)
 	}
 
 	return r

@@ -7,10 +7,16 @@ type RequestRegisterCompanyDto struct {
 	Desc string `json:"description" binding:"required"`
 }
 
+type RequestUpdateCompanyDto struct {
+	Name        string `json:"name,omitempty"`
+	Description string `json:"description,omitempty"`
+}
+
 type CompanyDto struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
-	Path string `json:"path"`
+	Id          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Path        string `json:"path"`
 }
 
 type ResponseCompanyDto struct {

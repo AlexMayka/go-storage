@@ -36,6 +36,7 @@ var (
 	ErrForbidden      = errors.New("forbidden")
 	ErrNotFound       = errors.New("not found")
 	ErrConflict       = errors.New("conflict")
+	ErrInternalServer = errors.New("internal server error")
 )
 
 func NewAppError(code int, err error, msg string) *AppError {
@@ -93,4 +94,8 @@ func NotFound(msg string) *AppError {
 
 func Conflict(msg string) *AppError {
 	return NewAppError(http.StatusConflict, ErrConflict, msg)
+}
+
+func InternalServer(msg string) *AppError {
+	return NewAppError(http.StatusInternalServerError, ErrInternalServer, msg)
 }

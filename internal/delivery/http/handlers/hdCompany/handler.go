@@ -3,17 +3,16 @@ package hdCompany
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"go-storage/internal/usecase/ucCompany"
 	"go-storage/pkg/errors"
 	"go-storage/pkg/logger"
 	"net/http"
 )
 
 type HandlerCompany struct {
-	userCase ucCompany.UseCaseCompanyInterface
+	userCase UseCaseCompanyInterface
 }
 
-func NewHandlerCompany(userCase ucCompany.UseCaseCompanyInterface) *HandlerCompany {
+func NewHandlerCompany(userCase UseCaseCompanyInterface) *HandlerCompany {
 	return &HandlerCompany{
 		userCase: userCase,
 	}
@@ -47,9 +46,7 @@ func (h *HandlerCompany) RegistrationCompany(ctx *gin.Context) {
 		return
 	}
 
-	answer := ToResponseCompany(company)
-
-	ctx.JSON(http.StatusOK, answer)
+	ctx.JSON(http.StatusOK, ToResponseCompany(company))
 }
 
 // GetCompanyById

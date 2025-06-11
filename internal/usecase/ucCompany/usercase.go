@@ -4,16 +4,15 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"go-storage/internal/domain"
-	"go-storage/internal/repository/postgres/rpCompany"
-	"go-storage/internal/utils"
+	"go-storage/internal/utils/valid"
 	"go-storage/pkg/errors"
 )
 
 type UseCaseCompany struct {
-	repo rpCompany.RepositoryInterface
+	repo RepositoryCompanyInterface
 }
 
-func NewUseCase(repo rpCompany.RepositoryInterface) *UseCaseCompany {
+func NewUseCase(repo RepositoryCompanyInterface) *UseCaseCompany {
 	return &UseCaseCompany{
 		repo: repo,
 	}
@@ -29,7 +28,7 @@ func (u *UseCaseCompany) RegisterCompany(ctx context.Context, c *domain.Company)
 	}
 
 	c.ID = uuid.NewString()
-	c.Path = utils.NormalizationOfName(c.Name)
+	c.Path = valid.NormalizationOfName(c.Name)
 
 	return u.repo.Create(ctx, c)
 }

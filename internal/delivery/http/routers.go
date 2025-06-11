@@ -18,8 +18,8 @@ func Router(log logger.Logger, db *sql.DB) *gin.Engine {
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	var rpCmp rpCompany.RepositoryInterface = rpCompany.NewRepository(db)
-	var ucCmp ucCompany.UseCaseCompanyInterface = ucCompany.NewUseCase(rpCmp)
+	var rpCmp ucCompany.RepositoryCompanyInterface = rpCompany.NewRepository(db)
+	var ucCmp hdCompany.UseCaseCompanyInterface = ucCompany.NewUseCase(rpCmp)
 	var hdCmp hdCompany.CompanyHandlerInterface = hdCompany.NewHandlerCompany(ucCmp)
 
 	api := r.Group("/api/v1/")

@@ -11,6 +11,67 @@ definitions:
       time:
         type: string
     type: object
+  hdAuth.JwtAuth:
+    properties:
+      expire_time:
+        type: string
+      token:
+        type: string
+    type: object
+  hdAuth.LoginResponseDto:
+    properties:
+      auth:
+        $ref: '#/definitions/hdAuth.JwtAuth'
+      company_id:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: string
+      last_name:
+        type: string
+      role_id:
+        type: string
+      username:
+        type: string
+    type: object
+  hdAuth.RequestLoginDto:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+    required:
+    - login
+    - password
+    type: object
+  hdAuth.RequestRefreshTokenDto:
+    properties:
+      token:
+        type: string
+    required:
+    - token
+    type: object
+  hdAuth.ResponseLoginDto:
+    properties:
+      answer:
+        $ref: '#/definitions/hdAuth.LoginResponseDto'
+      status:
+        type: string
+      time:
+        type: string
+    type: object
+  hdAuth.ResponseRefreshTokenDto:
+    properties:
+      answer:
+        $ref: '#/definitions/hdAuth.LoginResponseDto'
+      status:
+        type: string
+      time:
+        type: string
+    type: object
   hdCompany.CompanyDto:
     properties:
       description:
@@ -66,6 +127,155 @@ definitions:
       time:
         type: string
     type: object
+  hdUser.JwtAuth:
+    properties:
+      expire_time:
+        type: string
+      token:
+        type: string
+    type: object
+  hdUser.RegisterUserDto:
+    properties:
+      auth:
+        $ref: '#/definitions/hdUser.JwtAuth'
+      company_id:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: string
+      last_name:
+        type: string
+      phone:
+        type: string
+      role_id:
+        type: string
+      second_name:
+        type: string
+      username:
+        type: string
+    type: object
+  hdUser.RequestChangePasswordDto:
+    properties:
+      new_password:
+        type: string
+      old_password:
+        type: string
+    required:
+    - new_password
+    - old_password
+    type: object
+  hdUser.RequestRegistrationUserDto:
+    properties:
+      company_id:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      role_name:
+        type: string
+      second_name:
+        type: string
+      username:
+        type: string
+    required:
+    - company_id
+    - email
+    - first_name
+    - last_name
+    - password
+    - role_name
+    - username
+    type: object
+  hdUser.RequestUpdateUserDto:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      phone:
+        type: string
+      second_name:
+        type: string
+      username:
+        type: string
+    type: object
+  hdUser.ResponseMessageDto:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+      time:
+        type: string
+    type: object
+  hdUser.ResponseRegisterUserDto:
+    properties:
+      answer:
+        $ref: '#/definitions/hdUser.RegisterUserDto'
+      status:
+        type: string
+      time:
+        type: string
+    type: object
+  hdUser.ResponseUserDto:
+    properties:
+      answer:
+        $ref: '#/definitions/hdUser.UserDto'
+      status:
+        type: string
+      time:
+        type: string
+    type: object
+  hdUser.ResponseUsersDto:
+    properties:
+      answer:
+        items:
+          $ref: '#/definitions/hdUser.UserDto'
+        type: array
+      status:
+        type: string
+      time:
+        type: string
+    type: object
+  hdUser.UserDto:
+    properties:
+      company_id:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      last_name:
+        type: string
+      phone:
+        type: string
+      role_id:
+        type: string
+      second_name:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -73,6 +283,74 @@ info:
   title: Go-Storage
   version: "1.0"
 paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates user and returns JWT token
+      parameters:
+      - description: Login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/hdAuth.RequestLoginDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/hdAuth.ResponseLoginDto'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      summary: User login
+      tags:
+      - auth
+  /auth/refresh-token:
+    post:
+      consumes:
+      - application/json
+      description: Refreshes JWT authentication token
+      parameters:
+      - description: Refresh token payload
+        in: body
+        name: token
+        required: true
+        schema:
+          $ref: '#/definitions/hdAuth.RequestRefreshTokenDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/hdAuth.ResponseRefreshTokenDto'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      summary: Refresh JWT token
+      tags:
+      - auth
   /companies/:
     get:
       description: Returns a list of all active companies
@@ -83,10 +361,20 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/hdCompany.ResponseCompaniesDto'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/errors.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get all companies
       tags:
       - companies
@@ -112,10 +400,20 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/errors.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Register new company
       tags:
       - companies
@@ -139,6 +437,14 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
         "404":
           description: Not Found
           schema:
@@ -147,6 +453,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/errors.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Delete company
       tags:
       - companies
@@ -169,6 +477,14 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
         "404":
           description: Not Found
           schema:
@@ -177,6 +493,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/errors.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get company by ID
       tags:
       - companies
@@ -207,6 +525,14 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
         "404":
           description: Not Found
           schema:
@@ -215,7 +541,244 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/errors.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Update company
       tags:
       - companies
+  /user/register:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new user account with JWT authentication token
+      parameters:
+      - description: User registration payload
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/hdUser.RequestRegistrationUserDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/hdUser.ResponseRegisterUserDto'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      summary: Register new user
+      tags:
+      - users
+  /users/{id}:
+    delete:
+      description: Deactivates user account (soft delete)
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/hdUser.ResponseMessageDto'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Deactivate user
+      tags:
+      - users
+    get:
+      description: Returns a user by their UUID
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/hdUser.ResponseUserDto'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user by ID
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Updates user profile information
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: User update payload
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/hdUser.RequestUpdateUserDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/hdUser.ResponseUserDto'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update user
+      tags:
+      - users
+  /users/{id}/password:
+    put:
+      consumes:
+      - application/json
+      description: Changes user password with old password verification
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Password change payload
+        in: body
+        name: password
+        required: true
+        schema:
+          $ref: '#/definitions/hdUser.RequestChangePasswordDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/hdUser.ResponseMessageDto'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Change user password
+      tags:
+      - users
+  /users/company/{company_id}:
+    get:
+      description: Returns all users belonging to a specific company
+      parameters:
+      - description: Company ID (UUID)
+        in: path
+        name: company_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/hdUser.ResponseUsersDto'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get users by company
+      tags:
+      - users
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

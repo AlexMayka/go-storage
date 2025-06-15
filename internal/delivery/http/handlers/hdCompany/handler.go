@@ -22,11 +22,13 @@ func NewHandlerCompany(userCase UseCaseCompanyInterface) *HandlerCompany {
 // @Summary      Register new company
 // @Description  Creates a new company and assigns a unique storage path
 // @Tags         companies
+// @Security     BearerAuth
 // @Accept       json
 // @Produce      json
 // @Param        company  body      RequestRegisterCompanyDto  true  "Company payload"
 // @Success      200      {object}  ResponseCompanyDto
 // @Failure      400,500  {object}  errors.ErrorResponse
+// @Failure      401,403  {object}  errors.ErrorResponse
 // @Router       /companies/ [post]
 func (h *HandlerCompany) RegistrationCompany(ctx *gin.Context) {
 	log := logger.FromContext(ctx)
@@ -53,10 +55,12 @@ func (h *HandlerCompany) RegistrationCompany(ctx *gin.Context) {
 // @Summary      Get company by ID
 // @Description  Returns a company by its UUID
 // @Tags         companies
+// @Security     BearerAuth
 // @Produce      json
 // @Param        id   path      string  true  "Company ID (UUID)"
 // @Success      200  {object}  ResponseCompanyDto
 // @Failure      400,404,500  {object}  errors.ErrorResponse
+// @Failure      401,403  {object}  errors.ErrorResponse
 // @Router       /companies/{id} [get]
 func (h *HandlerCompany) GetCompanyById(ctx *gin.Context) {
 	log := logger.FromContext(ctx)
@@ -82,9 +86,11 @@ func (h *HandlerCompany) GetCompanyById(ctx *gin.Context) {
 // @Summary      Get all companies
 // @Description  Returns a list of all active companies
 // @Tags         companies
+// @Security     BearerAuth
 // @Produce      json
 // @Success      200  {object}  ResponseCompaniesDto
 // @Failure      500  {object}  errors.ErrorResponse
+// @Failure      401,403  {object}  errors.ErrorResponse
 // @Router       /companies/ [get]
 func (h *HandlerCompany) GetAllCompanies(ctx *gin.Context) {
 	log := logger.FromContext(ctx)
@@ -102,10 +108,12 @@ func (h *HandlerCompany) GetAllCompanies(ctx *gin.Context) {
 // @Summary      Delete company
 // @Description  Soft-deletes (deactivates) a company by ID
 // @Tags         companies
+// @Security     BearerAuth
 // @Produce      json
 // @Param        id   path      string  true  "Company ID (UUID)"
 // @Success      200  {object}  ResponseDeleteCompanyDto
 // @Failure      400,404,500  {object}  errors.ErrorResponse
+// @Failure      401,403  {object}  errors.ErrorResponse
 // @Router       /companies/{id} [delete]
 func (h *HandlerCompany) DeleteCompany(ctx *gin.Context) {
 	log := logger.FromContext(ctx)
@@ -130,12 +138,14 @@ func (h *HandlerCompany) DeleteCompany(ctx *gin.Context) {
 // @Summary      Update company
 // @Description  Updates name and/or description of the company
 // @Tags         companies
+// @Security     BearerAuth
 // @Accept       json
 // @Produce      json
 // @Param        id       path      string                   true  "Company ID (UUID)"
 // @Param        company  body      RequestUpdateCompanyDto  true  "Fields to update"
 // @Success      200      {object}  ResponseCompanyDto
 // @Failure      400,404,500  {object}  errors.ErrorResponse
+// @Failure      401,403  {object}  errors.ErrorResponse
 // @Router       /companies/{id} [put]
 func (h *HandlerCompany) UpdateCompany(ctx *gin.Context) {
 	log := logger.FromContext(ctx)

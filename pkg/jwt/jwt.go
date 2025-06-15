@@ -5,26 +5,48 @@ import (
 	"time"
 )
 
+type TokenResponse struct {
+	Token     string
+	ExpiresAt time.Time
+}
+
 func CreateToken(userID string, roleID string, secret []byte) (string, error) {
+	tokenResp, err := CreateTokenWithExpiry(userID, roleID, secret)
+	if err != nil {
+		return "", err
+	}
+	return tokenResp.Token, nil
+}
+
+func CreateTokenWithExpiry(userID string, roleID string, secret []byte) (*TokenResponse, error) {
 	if userID == "" {
-		return "", ErrEmptyUserID
+		return nil, ErrEmptyUserID
 	}
 
 	if roleID == "" {
-		return "", ErrEmptyRoleID
+		return nil, ErrEmptyRoleID
 	}
 
+	expiresAt := time.Now().Add(time.Hour * 72)
 	claims := AuthClaims{
 		RoleID: roleID,
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 72)),
+			ExpiresAt: jwt.NewNumericDate(expiresAt),
 		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(secret)
+	tokenString, err := token.SignedString(secret)
+	if err != nil {
+		return nil, err
+	}
+
+	return &TokenResponse{
+		Token:     tokenString,
+		ExpiresAt: expiresAt,
+	}, nil
 }
 
 func ParseToken(tokenStr string, secret []byte) (*AuthClaims, error) {

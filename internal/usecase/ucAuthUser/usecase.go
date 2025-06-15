@@ -50,3 +50,22 @@ func (u *UseCaseAuth) GetPermissionByRoleName(ctx context.Context, roleName stri
 
 	return permissions, nil
 }
+
+func (u *UseCaseAuth) GetRolePermissionsByRoleId(ctx context.Context, roleId string) (*[]domain.Permission, error) {
+	rolePermissions, err := u.repo.GetPermissionsIdByRoleId(ctx, roleId)
+	if err != nil {
+		return nil, err
+	}
+
+	permissionsIds := make([]string, len(*rolePermissions))
+	for index, permission := range *rolePermissions {
+		permissionsIds[index] = permission.PermissionsID
+	}
+
+	permissions, err := u.repo.GetPermissionByIds(ctx, permissionsIds)
+	if err != nil {
+		return nil, err
+	}
+
+	return permissions, nil
+}

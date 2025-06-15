@@ -21,6 +21,5 @@ func InitDB(host, port, user, password, dbName string) (*sql.DB, error) {
 		return nil, fmt.Errorf("db.Ping error: %w", err)
 	}
 
-	fmt.Println("Connected to PostgreSQL")
 	return db, nil
 }

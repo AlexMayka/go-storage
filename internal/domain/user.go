@@ -2,6 +2,12 @@ package domain
 
 import "time"
 
+type UserWithAuth struct {
+	User      *User
+	Token     string
+	ExpiresAt time.Time
+}
+
 type User struct {
 	ID         string
 	FirstName  string

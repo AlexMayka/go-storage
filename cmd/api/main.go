@@ -15,6 +15,11 @@ import (
 // @description This project is being developed as a cloud storage
 // @host        localhost:8080
 // @BasePath    /api/v1
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token.
 func main() {
 	cfg := config.NewConfig()
 
@@ -37,7 +42,7 @@ func main() {
 		return
 	}
 
-	r := http.Router(logging, database)
+	r := http.Router(logging, database, *cfg)
 	addr := fmt.Sprintf("%s:%s", cfg.App.Host, cfg.App.Port)
 
 	logging.Info("Run server", "addr", addr)

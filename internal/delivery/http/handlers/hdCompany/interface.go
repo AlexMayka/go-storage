@@ -12,6 +12,9 @@ type CompanyHandlerInterface interface {
 	GetAllCompanies(ctx *gin.Context)
 	DeleteCompany(ctx *gin.Context)
 	UpdateCompany(ctx *gin.Context)
+
+	GetMyCompany(ctx *gin.Context)
+	UpdateMyCompany(ctx *gin.Context)
 }
 
 type UseCaseCompanyInterface interface {

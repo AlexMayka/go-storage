@@ -27,5 +27,5 @@ const QueryUpdateCompany = `
 
 const QueryDeleteCompanies = `
 	DELETE FROM companies
-	WHERE id=$1::uuid;
+	WHERE id=$1;
 `

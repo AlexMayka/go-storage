@@ -456,3 +456,136 @@ func TestHandlerCompany_UpdateCompany_UseCaseError(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, rec.Code)
 	mockUC.AssertExpectations(t)
 }
+
+// Tests for GetMyCompany
+func TestHandlerCompany_GetMyCompany_Success(t *testing.T) {
+	mockUseCase := new(mockUseCase)
+	handler := NewHandlerCompany(mockUseCase)
+
+	router := gin.New()
+	router.Use(func(c *gin.Context) {
+		c.Set("company_id", "test-company-id")
+		c.Next()
+	})
+	router.GET("/companies/me", handler.GetMyCompany)
+
+	testCompany := &domain.Company{
+		ID:          "test-company-id",
+		Name:        "Test Company",
+		Description: "Test Description",
+	}
+
+	mockUseCase.On("GetCompanyById", mock.Anything, "test-company-id").Return(testCompany, nil)
+
+	req, _ := http.NewRequest("GET", "/companies/me", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var response ResponseCompanyDto
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	assert.NoError(t, err)
+	assert.Equal(t, "success", response.Status)
+	assert.Equal(t, testCompany.ID, response.Answer.Id)
+
+	mockUseCase.AssertExpectations(t)
+}
+
+func TestHandlerCompany_GetMyCompany_MissingCompanyID(t *testing.T) {
+	mockUseCase := new(mockUseCase)
+	handler := NewHandlerCompany(mockUseCase)
+
+	router := gin.New()
+	router.GET("/companies/me", handler.GetMyCompany)
+
+	req, _ := http.NewRequest("GET", "/companies/me", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+// Tests for UpdateMyCompany
+func TestHandlerCompany_UpdateMyCompany_Success(t *testing.T) {
+	mockUseCase := new(mockUseCase)
+	handler := NewHandlerCompany(mockUseCase)
+
+	router := gin.New()
+	router.Use(func(c *gin.Context) {
+		c.Set("company_id", "test-company-id")
+		c.Next()
+	})
+	router.PUT("/companies/me", handler.UpdateMyCompany)
+
+	testCompany := &domain.Company{
+		ID:          "test-company-id",
+		Name:        "Updated Company",
+		Description: "Updated Description",
+	}
+
+	requestData := RequestUpdateCompanyDto{
+		Name:        "Updated Company",
+		Description: "Updated Description",
+	}
+
+	mockUseCase.On("UpdateCompany", mock.Anything, "test-company-id", mock.AnythingOfType("*domain.Company")).Return(testCompany, nil)
+
+	jsonData, _ := json.Marshal(requestData)
+	req, _ := http.NewRequest("PUT", "/companies/me", bytes.NewBuffer(jsonData))
+	req.Header.Set("Content-Type", "application/json")
+
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var response ResponseCompanyDto
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	assert.NoError(t, err)
+	assert.Equal(t, "success", response.Status)
+	assert.Equal(t, testCompany.Name, response.Answer.Name)
+
+	mockUseCase.AssertExpectations(t)
+}
+
+func TestHandlerCompany_UpdateMyCompany_MissingCompanyID(t *testing.T) {
+	mockUseCase := new(mockUseCase)
+	handler := NewHandlerCompany(mockUseCase)
+
+	router := gin.New()
+	router.PUT("/companies/me", handler.UpdateMyCompany)
+
+	requestData := RequestUpdateCompanyDto{
+		Name: "Updated Company",
+	}
+
+	jsonData, _ := json.Marshal(requestData)
+	req, _ := http.NewRequest("PUT", "/companies/me", bytes.NewBuffer(jsonData))
+	req.Header.Set("Content-Type", "application/json")
+
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestHandlerCompany_UpdateMyCompany_InvalidJSON(t *testing.T) {
+	mockUseCase := new(mockUseCase)
+	handler := NewHandlerCompany(mockUseCase)
+
+	router := gin.New()
+	router.Use(func(c *gin.Context) {
+		c.Set("company_id", "test-company-id")
+		c.Next()
+	})
+	router.PUT("/companies/me", handler.UpdateMyCompany)
+
+	req, _ := http.NewRequest("PUT", "/companies/me", bytes.NewBuffer([]byte("invalid json")))
+	req.Header.Set("Content-Type", "application/json")
+
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}

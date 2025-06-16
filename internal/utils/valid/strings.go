@@ -1,8 +1,12 @@
 package valid
 
 import (
+	"errors"
+	"fmt"
 	"regexp"
+	"slices"
 	"strings"
+	"unicode"
 )
 
 var emailWord = []rune{
@@ -10,6 +14,8 @@ var emailWord = []rune{
 	'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
 	's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '.',
 	'@', '#', '$', '%', '^', '&', '*', '+', ',',
+	'1', '2', '3', '4', '5', '6', '7', '8', '9',
+	'0',
 }
 
 var phoneWord = []rune{
@@ -34,6 +40,21 @@ var translitMap = map[rune]string{
 	'у': "u", 'ф': "f", 'х': "h", 'ц': "ts", 'ч': "ch",
 	'ш': "sh", 'щ': "sch", 'ъ': "", 'ы': "y", 'ь': "",
 	'э': "e", 'ю': "yu", 'я': "ya",
+}
+
+var passwordLetter = []rune{
+	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i',
+	'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
+	's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+}
+
+var passwordChar = []rune{
+	'!', '"', '#', '$', '%', '&', '(', ')', '*', '+', '-', '.', '/', ':', ';', '<', '=', '>',
+	'?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~', '\'',
+}
+
+var passwordNumber = []rune{
+	'1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
 }
 
 func transliterate(s string) string {
@@ -99,4 +120,65 @@ func CheckName(name string) bool {
 		return false
 	}
 	return true
+}
+
+func checkValidPassword(password string) (bool, error) {
+	valid := map[string]int{
+		"num":     2,
+		"char":    1,
+		"letter":  3,
+		"capital": 1,
+	}
+
+	countCh := map[string]int{
+		"num":     0,
+		"char":    0,
+		"letter":  0,
+		"capital": 0,
+	}
+
+	for _, ch := range password {
+		if unicode.IsUpper(ch) {
+			countCh["letter"]++
+			countCh["capital"]++
+			continue
+		}
+
+		if slices.Contains(passwordLetter, ch) {
+			countCh["letter"]++
+			continue
+		}
+
+		if slices.Contains(passwordNumber, ch) {
+			countCh["num"]++
+			continue
+		}
+
+		if slices.Contains(passwordChar, ch) {
+			countCh["char"]++
+			continue
+		}
+
+		return false, fmt.Errorf("invalid password")
+	}
+
+	for key, count := range countCh {
+		if count < valid[key] {
+			return false, fmt.Errorf("password must contain at least %d %s", valid[key], key)
+		}
+	}
+
+	return true, nil
+}
+
+func CheckPassword(password string) (bool, error) {
+	if len(password) < 6 {
+		return false, errors.New("password length must be at least 6 characters")
+	}
+
+	if len(password) > 32 {
+		return false, errors.New("password length must be less than 32 characters")
+	}
+
+	return checkValidPassword(password)
 }

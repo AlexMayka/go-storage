@@ -1,6 +1,7 @@
 package domain
 
 type Role struct {
-	ID   string
-	Name string
+	ID        string
+	Name      string
+	IsDefault bool
 }

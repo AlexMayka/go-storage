@@ -82,3 +82,22 @@ const QueryUpdateLastLogin = `
 	SET last_login = $2, updated_at = $3
 	WHERE id = $1 AND is_active = true
 `
+
+const QueryUpdateUserRole = `
+	UPDATE users 
+	SET role_id = $2, updated_at = $3
+	WHERE id = $1 AND is_active = true
+`
+
+const QueryGetAllUsers = `
+	SELECT id, first_name, second_name, last_name, username, email, phone, "password", company_id, role_id, last_login, created_at, updated_at, is_active
+	FROM users 
+	WHERE is_active = true
+	ORDER BY created_at DESC
+`
+
+const QueryUpdateUserCompany = `
+	UPDATE users 
+	SET company_id = $2, updated_at = $3
+	WHERE id = $1 AND is_active = true
+`

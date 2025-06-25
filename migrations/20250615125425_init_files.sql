@@ -4,14 +4,14 @@ CREATE TABLE files (
     id UUID primary key DEFAULT gen_random_uuid(),
     name varchar(255) not null,
     type varchar(20) not null check (type in ('file', 'folder')),
-    full_path varchar(1000) not null unique,
+    full_path varchar(1000) not null,
     parent_id UUID,
     company_id UUID not null,
     user_created UUID not null,
 
     mime_type varchar(255),
-    size numeric,
-    hash varchar(255),
+    size BIGINT,
+    hash varchar(64),
     storage_path varchar(500),
     
     created_at timestamp with time zone default now(),
@@ -23,13 +23,13 @@ CREATE TABLE files (
     foreign key (parent_id) references files(id) on delete cascade
 );
 
-create index idx_files_company_id on files(company_id);
-create index idx_files_parent_id on files(parent_id);
-create index idx_files_type on files(type);
-create index idx_files_full_path on files(full_path);
-create index idx_files_hash on files(hash) where hash is not null;
+create index idx_files_company_active on files(company_id, is_active);
+create index idx_files_parent_type on files(parent_id, type) where is_active = true;
+create index idx_files_full_path on files(full_path varchar_pattern_ops) where is_active = true;
 
-alter table files add constraint unique_node_name unique (parent_id, name, company_id);
+create unique index idx_unique_name_in_folder 
+    on files(company_id, COALESCE(parent_id, '00000000-0000-0000-0000-000000000000'::UUID), name) 
+    where is_active = true;
 
 alter table files add constraint check_file_fields
 check (
@@ -40,12 +40,10 @@ check (
 
 -- +goose Down
 -- +goose StatementBegin
-DROP INDEX IF EXISTS idx_files_company_id;
-DROP INDEX IF EXISTS idx_files_parent_id;
-DROP INDEX IF EXISTS idx_files_type;
+DROP INDEX IF EXISTS idx_files_company_active;
+DROP INDEX IF EXISTS idx_files_parent_type;
 DROP INDEX IF EXISTS idx_files_full_path;
-DROP INDEX IF EXISTS idx_files_hash;
-ALTER table files DROP CONSTRAINT IF EXISTS unique_node_name;
+DROP INDEX IF EXISTS idx_unique_name_in_folder;
 ALTER table files DROP CONSTRAINT IF EXISTS check_file_fields;
 DROP TABLE IF EXISTS files;
 -- +goose StatementEnd

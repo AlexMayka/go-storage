@@ -19,4 +19,12 @@ type RepositoryUserInterface interface {
 	UpdateIsActive(ctx context.Context, userID string, isActive bool) error
 	UpdateIsActiveWithCompany(ctx context.Context, userID string, isActive bool, companyId string) error
 	UpdateLastLogin(ctx context.Context, userID string) error
+	UpdateUserRole(ctx context.Context, userID string, roleID string) error
+	GetAllUsers(ctx context.Context) ([]*domain.User, error)
+	UpdateUserCompany(ctx context.Context, userID string, companyID string) error
+}
+
+type RepositoryAuthInterface interface {
+	GetRoleById(ctx context.Context, roleId string) (*domain.Role, error)
+	GetRoleByName(ctx context.Context, roleId string) (*domain.Role, error)
 }

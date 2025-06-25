@@ -69,3 +69,11 @@ func (u *UseCaseAuth) GetRolePermissionsByRoleId(ctx context.Context, roleId str
 
 	return permissions, nil
 }
+
+func (u *UseCaseAuth) GetDefaultRole(ctx context.Context) (domain.Role, error) {
+	role, err := u.GetRoleByName(ctx, "user")
+	if err != nil {
+		return domain.Role{}, err
+	}
+	return *role, nil
+}

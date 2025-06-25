@@ -1,29 +1,136 @@
 services:
+  # PostgreSQL Database
+  db:
+    image: postgres:16-alpine
+    container_name: go-storage-postgres
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
+      POSTGRES_DB: ${POSTGRES_DB:-storage}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d/
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-admin} -d ${POSTGRES_DB:-storage}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - go-storage-network
+
+  # MinIO Object Storage
   minio:
     image: minio/minio:latest
-    container_name: minio
+    container_name: go-storage-minio
+    restart: unless-stopped
     ports:
-      - "${MINIO_API_PORT}:${MINIO_API_PORT}"
-      - "${MINIO_CONSOLE_PORT}:${MINIO_CONSOLE_PORT}"
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
     volumes:
       - minio_data:/data
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-    command: server /data --console-address ":${MINIO_CONSOLE_PORT}"
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-secret123}
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - go-storage-network
 
-  db:
-    image: postgres:16
-    container_name: postgres
-    ports:
-      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+  # Database Migration
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile.migrate
+    container_name: go-storage-migrate
+    depends_on:
+      db:
+        condition: service_healthy
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - ./migrations:/migrations
+    command: [
+      "-dir", "/migrations", 
+      "postgres", 
+      "postgres://${POSTGRES_USER:-admin}:${POSTGRES_PASSWORD:-admin}@db:5432/${POSTGRES_DB:-storage}?sslmode=disable", 
+      "up"
+    ]
+    networks:
+      - go-storage-network
+
+  # Go Storage Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: go-storage-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    environment:
+      # Database
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
+      POSTGRES_DB: ${POSTGRES_DB:-storage}
+      
+      # MinIO
+      MINIO_ROOT_HOST: minio
+      MINIO_API_PORT: 9000
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-secret123}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-go-storage}
+      
+      # App
+      APP_HOST: ${APP_HOST:-0.0.0.0}
+      APP_PORT: ${APP_PORT:-8080}
+      APP_JWT_SECRET: ${APP_JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      APP_LOG_FILE: ${APP_LOG_FILE:-true}
+      APP_LOG_LEVEL: ${APP_LOG_LEVEL:-info}
+      
+      # File Server Settings
+      FILE_SMALL_THRESHOLD: ${FILE_SMALL_THRESHOLD:-10485760}      # 10MB
+      FILE_MEDIUM_THRESHOLD: ${FILE_MEDIUM_THRESHOLD:-104857600}   # 100MB
+      FILE_LARGE_THRESHOLD: ${FILE_LARGE_THRESHOLD:-1073741824}    # 1GB
+      FILE_MAX_SIZE: ${FILE_MAX_SIZE:-5368709120}                  # 5GB
+      FILE_MAX_CONCURRENT_UPLOADS: ${FILE_MAX_CONCURRENT_UPLOADS:-10}
+      FILE_MAX_MEMORY_PER_REQUEST: ${FILE_MAX_MEMORY_PER_REQUEST:-104857600}  # 100MB
+      FILE_MAX_TOTAL_MEMORY: ${FILE_MAX_TOTAL_MEMORY:-524288000}   # 500MB
+      FILE_CHUNK_SIZE: ${FILE_CHUNK_SIZE:-5242880}                 # 5MB
+      FILE_CHUNK_TIMEOUT: ${FILE_CHUNK_TIMEOUT:-30s}
+      FILE_CHUNK_SESSION_TTL: ${FILE_CHUNK_SESSION_TTL:-24h}
+      FILE_BUFFER_SIZE: ${FILE_BUFFER_SIZE:-65536}                 # 64KB
+      FILE_DOWNLOAD_TIMEOUT: ${FILE_DOWNLOAD_TIMEOUT:-10m}
+      FILE_MEMORY_PRESSURE_THRESHOLD: ${FILE_MEMORY_PRESSURE_THRESHOLD:-0.8}
+      FILE_CPU_PRESSURE_THRESHOLD: ${FILE_CPU_PRESSURE_THRESHOLD:-0.7}
+      FILE_CIRCUIT_MAX_FAILURES: ${FILE_CIRCUIT_MAX_FAILURES:-5}
+      FILE_CIRCUIT_TIMEOUT: ${FILE_CIRCUIT_TIMEOUT:-1m}
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    volumes:
+      - app_logs:/root/log
+    networks:
+      - go-storage-network
 
 volumes:
-  minio_data:
   pgdata:
+    driver: local
+  minio_data:
+    driver: local
+  app_logs:
+    driver: local
+
+networks:
+  go-storage-network:
+    driver: bridge

@@ -42,7 +42,14 @@ func NewAuthMiddleware(uc UseCaseAuthInterface) *AuthMiddleware {
 func (a *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		log := logger.FromContext(c.Request.Context())
-		cnf := config.FromContext(c.Request.Context())
+		cnfPtr := config.FromContext(c.Request.Context())
+		if cnfPtr == nil {
+			log.Error("config not found in context")
+			errors.HandleError(c, errors.InternalServer("configuration error"))
+			c.Abort()
+			return
+		}
+		cnf := *cnfPtr
 
 		header := c.Request.Header.Get("Authorization")
 		if header == "" {

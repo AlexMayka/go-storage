@@ -1,0 +1,135 @@
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:16-alpine
+    container_name: go-storage-postgres-prod
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata_prod:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d/
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - go-storage-network
+    # No ports exposed to host in production
+
+  # MinIO Object Storage
+  minio:
+    image: minio/minio:latest
+    container_name: go-storage-minio-prod
+    restart: always
+    volumes:
+      - minio_data_prod:/data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - go-storage-network
+    # No ports exposed to host in production
+
+  # Go Storage Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: go-storage-app-prod
+    restart: always
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    environment:
+      # Database
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      
+      # MinIO
+      MINIO_ROOT_HOST: minio
+      MINIO_API_PORT: 9000
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
+      
+      # App
+      APP_HOST: 0.0.0.0
+      APP_PORT: 8080
+      APP_JWT_SECRET: ${APP_JWT_SECRET}
+      APP_LOG_FILE: "true"
+      APP_LOG_LEVEL: ${APP_LOG_LEVEL:-info}
+      
+      # File Server Settings
+      FILE_SMALL_THRESHOLD: ${FILE_SMALL_THRESHOLD:-10485760}
+      FILE_MEDIUM_THRESHOLD: ${FILE_MEDIUM_THRESHOLD:-104857600}
+      FILE_LARGE_THRESHOLD: ${FILE_LARGE_THRESHOLD:-1073741824}
+      FILE_MAX_SIZE: ${FILE_MAX_SIZE:-5368709120}
+      FILE_MAX_CONCURRENT_UPLOADS: ${FILE_MAX_CONCURRENT_UPLOADS:-20}
+      FILE_MAX_MEMORY_PER_REQUEST: ${FILE_MAX_MEMORY_PER_REQUEST:-104857600}
+      FILE_MAX_TOTAL_MEMORY: ${FILE_MAX_TOTAL_MEMORY:-1073741824}
+      FILE_CHUNK_SIZE: ${FILE_CHUNK_SIZE:-5242880}
+      FILE_CHUNK_TIMEOUT: ${FILE_CHUNK_TIMEOUT:-30s}
+      FILE_CHUNK_SESSION_TTL: ${FILE_CHUNK_SESSION_TTL:-24h}
+      FILE_BUFFER_SIZE: ${FILE_BUFFER_SIZE:-65536}
+      FILE_DOWNLOAD_TIMEOUT: ${FILE_DOWNLOAD_TIMEOUT:-10m}
+      FILE_MEMORY_PRESSURE_THRESHOLD: ${FILE_MEMORY_PRESSURE_THRESHOLD:-0.8}
+      FILE_CPU_PRESSURE_THRESHOLD: ${FILE_CPU_PRESSURE_THRESHOLD:-0.7}
+      FILE_CIRCUIT_MAX_FAILURES: ${FILE_CIRCUIT_MAX_FAILURES:-5}
+      FILE_CIRCUIT_TIMEOUT: ${FILE_CIRCUIT_TIMEOUT:-1m}
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    volumes:
+      - app_logs_prod:/root/log
+    networks:
+      - go-storage-network
+    # Production security settings
+    read_only: false  # Set to true if app doesn't need write access
+    security_opt:
+      - no-new-privileges:true
+    user: "1000:1000"  # Run as non-root user
+
+  # Reverse Proxy (Nginx)
+  nginx:
+    image: nginx:alpine
+    container_name: go-storage-nginx-prod
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_logs_prod:/var/log/nginx
+    depends_on:
+      - app
+    networks:
+      - go-storage-network
+
+volumes:
+  pgdata_prod:
+    driver: local
+  minio_data_prod:
+    driver: local
+  app_logs_prod:
+    driver: local
+  nginx_logs_prod:
+    driver: local
+
+networks:
+  go-storage-network:
+    driver: bridge

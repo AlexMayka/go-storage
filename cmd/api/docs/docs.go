@@ -223,6 +223,128 @@ const docTemplate = `{
                 }
             }
         },
+        "/companies/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns your company information",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "companies"
+                ],
+                "summary": "Get my company",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/hdCompany.ResponseCompanyDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates your company information (company admin only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "companies"
+                ],
+                "summary": "Update my company",
+                "parameters": [
+                    {
+                        "description": "Fields to update",
+                        "name": "company",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/hdCompany.RequestUpdateCompanyDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/hdCompany.ResponseCompanyDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/companies/{id}": {
             "get": {
                 "security": [
@@ -423,9 +545,1185 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/register": {
+        "/files/chunked/init": {
             "post": {
-                "description": "Creates a new user account with JWT authentication token",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Initializes a chunked upload session for large files",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "chunked-upload"
+                ],
+                "summary": "Initialize chunked upload",
+                "parameters": [
+                    {
+                        "description": "Upload initialization details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/hdFileFolder.RequestInitChunkedUpload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/hdFileFolder.ResponseInitChunkedUpload"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/files/chunked/{uploadId}/abort": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Aborts a chunked upload session and cleans up temporary data",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "chunked-upload"
+                ],
+                "summary": "Abort chunked upload",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Upload session ID",
+                        "name": "uploadId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/hdFileFolder.ResponseSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/files/chunked/{uploadId}/chunk/{chunkIndex}": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Uploads a single chunk of a file in a chunked upload session",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "chunked-upload"
+                ],
+                "summary": "Upload file chunk",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Upload session ID",
+                        "name": "uploadId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Chunk index (0-based)",
+                        "name": "chunkIndex",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Chunk data",
+                        "name": "chunk",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/hdFileFolder.ResponseUploadChunk"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/files/chunked/{uploadId}/complete": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Completes a chunked upload session and creates the final file",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "chunked-upload"
+                ],
+                "summary": "Complete chunked upload",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Upload session ID",
+                        "name": "uploadId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/hdFileFolder.ResponseCompleteChunkedUpload"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/files/chunked/{uploadId}/status": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns the current status of a chunked upload session",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "chunked-upload"
+                ],
+                "summary": "Get chunked upload status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Upload session ID",
+                        "name": "uploadId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/hdFileFolder.ResponseChunkedUploadStatus"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/files/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns current system resource usage and limits",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "monitoring"
+                ],
+                "summary": "Get resource statistics",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/hdFileFolder.ResponseResourceStats"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/files/upload": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Uploads a file to the specified folder",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Upload file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Parent folder path",
+                        "name": "parentPath",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "File to upload",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/hdFileFolder.ResponseFile"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/files/upload-strategy": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns recommended upload strategy based on file size",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get upload strategy",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "File size in bytes",
+                        "name": "fileSize",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/hdFileFolder.ResponseUploadStrategy"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/files/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns metadata about a file",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get file information",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/hdFileFolder.ResponseFile"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Deletes a file from the system",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Delete file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/hdFileFolder.ResponseSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/files/{id}/download": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Downloads a file by ID",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Download file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Display inline instead of attachment",
+                        "name": "inline",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/files/{id}/move": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Moves a file to a new location",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Move file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "New parent path",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/hdFileFolder.RequestMoveFile"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/hdFileFolder.ResponseFile"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/files/{id}/rename": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Renames a file",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Rename file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "New file name",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/hdFileFolder.RequestRenameFile"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/hdFileFolder.ResponseFile"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/folders": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Creates a new folder in the file system",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "folders"
+                ],
+                "summary": "Create new folder",
+                "parameters": [
+                    {
+                        "description": "Folder details",
+                        "name": "folder",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/hdFileFolder.RequestCreateFolder"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/hdFileFolder.ResponseFolder"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/folders/contents": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns list of files and folders in specified path",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "folders"
+                ],
+                "summary": "Get folder contents",
+                "parameters": [
+                    {
+                        "description": "Path and filter options",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/hdFileFolder.RequestGetFolder"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/hdFileFolder.ResponseGetFolder"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/folders/{path}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Deletes a folder and all its contents",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "folders"
+                ],
+                "summary": "Delete folder",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Folder path",
+                        "name": "path",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/hdFileFolder.ResponsePath"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/folders/{path}/move": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Moves a folder to a new location",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "folders"
+                ],
+                "summary": "Move folder",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Folder path",
+                        "name": "path",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "New parent path",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/hdFileFolder.RequestMoveFolder"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/hdFileFolder.ResponsePath"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/folders/{path}/rename": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Renames a folder at the specified path",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "folders"
+                ],
+                "summary": "Rename folder",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Folder path",
+                        "name": "path",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "New folder name",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/hdFileFolder.RequestRenameFolder"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/hdFileFolder.ResponsePath"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Register new user in your company (company admin only)",
                 "consumes": [
                     "application/json"
                 ],
@@ -451,11 +1749,17 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/hdUser.ResponseRegisterUserDto"
+                            "$ref": "#/definitions/hdUser.ResponseUserDto"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/errors.ErrorResponse"
                         }
@@ -469,30 +1773,21 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/company/{company_id}": {
+        "/users/all": {
             "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Returns all users belonging to a specific company",
+                "description": "Returns all users from all companies (super admin only)",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "users"
                 ],
-                "summary": "Get users by company",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Company ID (UUID)",
-                        "name": "company_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
+                "summary": "Get all users (super admin only)",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -512,8 +1807,192 @@ const docTemplate = `{
                             "$ref": "#/definitions/errors.ErrorResponse"
                         }
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/company": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns all users from your company (company admin only)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get all users in your company",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/hdUser.ResponseUsersDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/me": {
+            "get": {
+                "description": "Getting information about yourself by JWT",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get info about yourself",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/hdUser.ResponseUserDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update your own profile information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Update your profile",
+                "parameters": [
+                    {
+                        "description": "User update payload",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/hdUser.RequestUpdateUserDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/hdUser.ResponseUserDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/me/password": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Change your own password with old password verification",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Change your password",
+                "parameters": [
+                    {
+                        "description": "Password change payload",
+                        "name": "password",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/hdUser.RequestChangePasswordDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/hdUser.ResponseMessageDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/errors.ErrorResponse"
                         }
@@ -709,6 +2188,134 @@ const docTemplate = `{
                 }
             }
         },
+        "/users/{id}/activate": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Activates user account",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Activate user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/hdUser.ResponseMessageDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{id}/company": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Transfers user to different company (super admin only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Transfer user to another company",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Company transfer payload",
+                        "name": "company",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/hdUser.RequestTransferCompanyDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/hdUser.ResponseMessageDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/users/{id}/password": {
             "put": {
                 "security": [
@@ -778,9 +2385,188 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/users/{id}/role": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates user role (company_admin only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Update user role",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Role update payload",
+                        "name": "role",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/hdUser.RequestUpdateRoleDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/hdUser.ResponseMessageDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "domain.ChunkedUploadStatus": {
+            "type": "string",
+            "enum": [
+                "active",
+                "completed",
+                "failed",
+                "expired"
+            ],
+            "x-enum-varnames": [
+                "ChunkedUploadStatusActive",
+                "ChunkedUploadStatusCompleted",
+                "ChunkedUploadStatusFailed",
+                "ChunkedUploadStatusExpired"
+            ]
+        },
+        "domain.CircuitBreakerState": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2
+            ],
+            "x-enum-varnames": [
+                "CircuitClosed",
+                "CircuitOpen",
+                "CircuitHalfOpen"
+            ]
+        },
+        "domain.FileType": {
+            "type": "string",
+            "enum": [
+                "file",
+                "folder"
+            ],
+            "x-enum-varnames": [
+                "FileTypeFile",
+                "FileTypeFolder"
+            ]
+        },
+        "domain.ResourceStats": {
+            "type": "object",
+            "properties": {
+                "active_uploads": {
+                    "type": "integer"
+                },
+                "circuit_state": {
+                    "$ref": "#/definitions/domain.CircuitBreakerState"
+                },
+                "failures": {
+                    "type": "integer"
+                },
+                "max_uploads": {
+                    "type": "integer"
+                },
+                "memory_usage": {
+                    "$ref": "#/definitions/domain.ResourceUsage"
+                }
+            }
+        },
+        "domain.ResourceUsage": {
+            "type": "object",
+            "properties": {
+                "current": {
+                    "type": "integer"
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "system_total": {
+                    "type": "integer"
+                },
+                "system_used": {
+                    "type": "integer"
+                }
+            }
+        },
+        "domain.StrategyInfo": {
+            "type": "object",
+            "properties": {
+                "chunk_size": {
+                    "type": "integer"
+                },
+                "file_size": {
+                    "type": "integer"
+                },
+                "requires_chunks": {
+                    "type": "boolean"
+                },
+                "strategy": {
+                    "$ref": "#/definitions/domain.UploadStrategy"
+                },
+                "total_chunks": {
+                    "type": "integer"
+                }
+            }
+        },
+        "domain.UploadStrategy": {
+            "type": "string",
+            "enum": [
+                "memory",
+                "stream",
+                "chunked"
+            ],
+            "x-enum-varnames": [
+                "UploadStrategyMemory",
+                "UploadStrategyStream",
+                "UploadStrategyChunked"
+            ]
+        },
         "errors.ErrorResponse": {
             "type": "object",
             "properties": {
@@ -977,48 +2763,344 @@ const docTemplate = `{
                 }
             }
         },
-        "hdUser.JwtAuth": {
+        "hdFileFolder.FolderFileDTO": {
             "type": "object",
             "properties": {
-                "expire_time": {
-                    "type": "string"
-                },
-                "token": {
-                    "type": "string"
-                }
-            }
-        },
-        "hdUser.RegisterUserDto": {
-            "type": "object",
-            "properties": {
-                "auth": {
-                    "$ref": "#/definitions/hdUser.JwtAuth"
-                },
                 "company_id": {
                     "type": "string"
                 },
-                "email": {
+                "created_at": {
                     "type": "string"
                 },
-                "first_name": {
+                "full_path": {
                     "type": "string"
                 },
                 "id": {
                     "type": "string"
                 },
-                "last_name": {
+                "mime_type": {
                     "type": "string"
                 },
-                "phone": {
+                "name": {
                     "type": "string"
                 },
-                "role_id": {
+                "parent_id": {
                     "type": "string"
                 },
-                "second_name": {
+                "size": {
+                    "type": "integer"
+                },
+                "storage_path": {
                     "type": "string"
                 },
-                "username": {
+                "type": {
+                    "$ref": "#/definitions/domain.FileType"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_created_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "hdFileFolder.RequestCreateFolder": {
+            "type": "object",
+            "required": [
+                "name",
+                "parentPath"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "parentPath": {
+                    "type": "string"
+                }
+            }
+        },
+        "hdFileFolder.RequestGetFolder": {
+            "type": "object",
+            "required": [
+                "path"
+            ],
+            "properties": {
+                "path": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/domain.FileType"
+                }
+            }
+        },
+        "hdFileFolder.RequestInitChunkedUpload": {
+            "type": "object",
+            "required": [
+                "fileName",
+                "fileSize",
+                "parentPath"
+            ],
+            "properties": {
+                "fileName": {
+                    "type": "string"
+                },
+                "fileSize": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "mimeType": {
+                    "type": "string"
+                },
+                "parentPath": {
+                    "type": "string"
+                }
+            }
+        },
+        "hdFileFolder.RequestMoveFile": {
+            "type": "object",
+            "required": [
+                "parentPath"
+            ],
+            "properties": {
+                "parentPath": {
+                    "type": "string"
+                }
+            }
+        },
+        "hdFileFolder.RequestMoveFolder": {
+            "type": "object",
+            "required": [
+                "parentPath"
+            ],
+            "properties": {
+                "parentPath": {
+                    "type": "string"
+                }
+            }
+        },
+        "hdFileFolder.RequestRenameFile": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "hdFileFolder.RequestRenameFolder": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "hdFileFolder.ResponseChunkedUploadStatus": {
+            "type": "object",
+            "properties": {
+                "expires_at": {
+                    "type": "string"
+                },
+                "file_name": {
+                    "type": "string"
+                },
+                "missing_chunks": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "progress": {
+                    "type": "number"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                },
+                "total_chunks": {
+                    "type": "integer"
+                },
+                "total_size": {
+                    "type": "integer"
+                },
+                "upload_id": {
+                    "type": "string"
+                },
+                "upload_status": {
+                    "$ref": "#/definitions/domain.ChunkedUploadStatus"
+                },
+                "uploaded_chunks": {
+                    "type": "integer"
+                },
+                "uploaded_size": {
+                    "type": "integer"
+                }
+            }
+        },
+        "hdFileFolder.ResponseCompleteChunkedUpload": {
+            "type": "object",
+            "properties": {
+                "file": {
+                    "$ref": "#/definitions/hdFileFolder.FolderFileDTO"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                }
+            }
+        },
+        "hdFileFolder.ResponseFile": {
+            "type": "object",
+            "properties": {
+                "file": {
+                    "$ref": "#/definitions/hdFileFolder.FolderFileDTO"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                }
+            }
+        },
+        "hdFileFolder.ResponseFolder": {
+            "type": "object",
+            "properties": {
+                "folder": {
+                    "$ref": "#/definitions/hdFileFolder.FolderFileDTO"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                }
+            }
+        },
+        "hdFileFolder.ResponseGetFolder": {
+            "type": "object",
+            "properties": {
+                "files": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/hdFileFolder.FolderFileDTO"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                }
+            }
+        },
+        "hdFileFolder.ResponseInitChunkedUpload": {
+            "type": "object",
+            "properties": {
+                "chunk_size": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "strategy": {
+                    "$ref": "#/definitions/domain.StrategyInfo"
+                },
+                "time": {
+                    "type": "string"
+                },
+                "total_chunks": {
+                    "type": "integer"
+                },
+                "upload_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "hdFileFolder.ResponsePath": {
+            "type": "object",
+            "properties": {
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                }
+            }
+        },
+        "hdFileFolder.ResponseResourceStats": {
+            "type": "object",
+            "properties": {
+                "stats": {
+                    "$ref": "#/definitions/domain.ResourceStats"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                }
+            }
+        },
+        "hdFileFolder.ResponseSuccess": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                }
+            }
+        },
+        "hdFileFolder.ResponseUploadChunk": {
+            "type": "object",
+            "properties": {
+                "chunk_index": {
+                    "type": "integer"
+                },
+                "progress": {
+                    "type": "number"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                },
+                "total_chunks": {
+                    "type": "integer"
+                },
+                "uploaded_chunks": {
+                    "type": "integer"
+                }
+            }
+        },
+        "hdFileFolder.ResponseUploadStrategy": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string"
+                },
+                "strategy": {
+                    "$ref": "#/definitions/domain.StrategyInfo"
+                },
+                "time": {
                     "type": "string"
                 }
             }
@@ -1079,6 +3161,28 @@ const docTemplate = `{
                 }
             }
         },
+        "hdUser.RequestTransferCompanyDto": {
+            "type": "object",
+            "required": [
+                "company_id"
+            ],
+            "properties": {
+                "company_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "hdUser.RequestUpdateRoleDto": {
+            "type": "object",
+            "required": [
+                "role_id"
+            ],
+            "properties": {
+                "role_id": {
+                    "type": "string"
+                }
+            }
+        },
         "hdUser.RequestUpdateUserDto": {
             "type": "object",
             "properties": {
@@ -1107,20 +3211,6 @@ const docTemplate = `{
             "properties": {
                 "message": {
                     "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "time": {
-                    "type": "string"
-                }
-            }
-        },
-        "hdUser.ResponseRegisterUserDto": {
-            "type": "object",
-            "properties": {
-                "answer": {
-                    "$ref": "#/definitions/hdUser.RegisterUserDto"
                 },
                 "status": {
                     "type": "string"

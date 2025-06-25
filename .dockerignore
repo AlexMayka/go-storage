@@ -1,17 +1,58 @@
+# Git
 .git
 .gitignore
 
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Documentation
+README.md
 *.md
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
 *.log
-*.env
 log/
 
-.idea/
-.vscode/
+# Temporary files
+tmp/
+temp/
 
-*.swp
-tests/
+# Build artifacts
+*.exe
+*.dll
+*.so
+*.dylib
+main
+api
+cmd/api/api
+
+# Test files
+*_test.go
+
+# Coverage
+*.out
 coverage.out
 
-.dockerignore
-docker-compose.yml
+# Environment
+.env
+.env.local
+.env.example
+
+# Node modules (if any)
+node_modules/
+
+# Binary output
+bin/
+dist/

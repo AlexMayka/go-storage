@@ -1,5 +1,4 @@
 services:
-  # PostgreSQL Database
   db:
     image: postgres:16-alpine
     container_name: go-storage-postgres-prod
@@ -18,9 +17,7 @@ services:
       retries: 5
     networks:
       - go-storage-network
-    # No ports exposed to host in production
 
-  # MinIO Object Storage
   minio:
     image: minio/minio:latest
     container_name: go-storage-minio-prod
@@ -38,9 +35,7 @@ services:
       retries: 3
     networks:
       - go-storage-network
-    # No ports exposed to host in production
 
-  # Go Storage Application
   app:
     build:
       context: .
@@ -50,28 +45,24 @@ services:
     ports:
       - "${APP_PORT:-8080}:8080"
     environment:
-      # Database
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-      
-      # MinIO
+
       MINIO_ROOT_HOST: minio
       MINIO_API_PORT: 9000
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
       MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
-      
-      # App
+
       APP_HOST: 0.0.0.0
       APP_PORT: 8080
       APP_JWT_SECRET: ${APP_JWT_SECRET}
       APP_LOG_FILE: "true"
       APP_LOG_LEVEL: ${APP_LOG_LEVEL:-info}
-      
-      # File Server Settings
+
       FILE_SMALL_THRESHOLD: ${FILE_SMALL_THRESHOLD:-10485760}
       FILE_MEDIUM_THRESHOLD: ${FILE_MEDIUM_THRESHOLD:-104857600}
       FILE_LARGE_THRESHOLD: ${FILE_LARGE_THRESHOLD:-1073741824}
@@ -97,13 +88,11 @@ services:
       - app_logs_prod:/root/log
     networks:
       - go-storage-network
-    # Production security settings
-    read_only: false  # Set to true if app doesn't need write access
+    read_only: false
     security_opt:
       - no-new-privileges:true
-    user: "1000:1000"  # Run as non-root user
+    user: "1000:1000"
 
-  # Reverse Proxy (Nginx)
   nginx:
     image: nginx:alpine
     container_name: go-storage-nginx-prod

@@ -1,0 +1,16 @@
+FROM golang:1.23-alpine AS builder
+
+# Install goose
+RUN go install github.com/pressly/goose/v3/cmd/goose@latest
+
+FROM alpine:latest
+
+# Install ca-certificates for SSL connections
+RUN apk --no-cache add ca-certificates
+
+# Copy goose binary
+COPY --from=builder /go/bin/goose /usr/local/bin/goose
+
+WORKDIR /migrations
+
+ENTRYPOINT ["goose"]

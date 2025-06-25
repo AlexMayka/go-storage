@@ -2,6 +2,7 @@ package ucUser
 
 import (
 	"context"
+	"fmt"
 	"github.com/google/uuid"
 	"go-storage/internal/domain"
 	"go-storage/internal/utils/valid"
@@ -36,6 +37,9 @@ func (u *UseCaseUser) RegisterUser(ctx context.Context, c *domain.User) (*domain
 func (u *UseCaseUser) Login(ctx context.Context, login, password string) (*domain.User, error) {
 	var user *domain.User
 	var err error
+
+	pas, err := auth.Hash(password)
+	fmt.Println(pas)
 
 	if valid.CheckEmail(login) {
 		user, err = u.repo.GetUserByEmail(ctx, login)

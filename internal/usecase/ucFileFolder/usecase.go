@@ -61,7 +61,6 @@ func (uc *UseCaseFileFolder) CreateFolder(ctx context.Context, folder *domain.Fi
 		}
 	}
 
-	// Check for naming conflicts
 	existingFile, err := uc.fileRepo.GetFileByPath(ctx, folder.CompanyId, &folder.FullPath)
 	if err == nil && existingFile != nil {
 		return nil, errors.BadRequest("folder with this name already exists")
@@ -98,13 +97,11 @@ func (uc *UseCaseFileFolder) MoveFolder(ctx context.Context, companyID string, f
 		return nil, errors.BadRequest("specified path is not a folder")
 	}
 
-	// Check if destination already exists
 	_, err = uc.fileRepo.GetFileByPath(ctx, companyID, newPath)
 	if err == nil {
 		return nil, errors.BadRequest("destination already exists")
 	}
 
-	// Update folder path
 	result, err := uc.fileRepo.MoveFolder(ctx, companyID, folderPath, newPath)
 	if err != nil {
 		return nil, err
@@ -118,7 +115,6 @@ func (uc *UseCaseFileFolder) DeleteFolder(ctx context.Context, companyID string,
 		return errors.BadRequest("company ID is required")
 	}
 
-	// Check if folder exists
 	folder, err := uc.fileRepo.GetFileByPath(ctx, companyID, folderPath)
 	if err != nil {
 		return errors.NotFound("folder not found")
@@ -128,7 +124,6 @@ func (uc *UseCaseFileFolder) DeleteFolder(ctx context.Context, companyID string,
 		return errors.BadRequest("specified path is not a folder")
 	}
 
-	// Check if folder is empty (optional - could allow recursive delete)
 	contents, err := uc.fileRepo.GetFolderContents(ctx, companyID, folderPath, nil)
 	if err != nil {
 		return err
@@ -154,24 +149,20 @@ func (uc *UseCaseFileFolder) UploadFile(ctx context.Context, companyID, userID s
 		return nil, errors.BadRequest("filename is required")
 	}
 
-	// Check file size limits
 	if size > uc.config.MaxFileSize {
 		return nil, errors.BadRequest("file size exceeds maximum allowed size")
 	}
 
-	// Check resource availability
 	if err := uc.resourceMonitor.AcquireUploadSlot(ctx); err != nil {
 		return nil, errors.TooManyRequests("too many concurrent uploads")
 	}
 	defer uc.resourceMonitor.ReleaseUploadSlot()
 
-	// Get upload strategy
 	strategy, err := uc.strategySelector.SelectStrategy(size)
 	if err != nil {
 		return nil, err
 	}
 
-	// Create file record
 	file := &domain.File{
 		ID:           uuid.NewString(),
 		Name:         filename,
@@ -185,14 +176,11 @@ func (uc *UseCaseFileFolder) UploadFile(ctx context.Context, companyID, userID s
 		IsActive:     true,
 	}
 
-	// Determine MIME type
 	mimeType := determineMimeType(filename)
 	file.MimeType = &mimeType
 
-	// Generate storage key
 	storageKey := generateStorageKey(companyID, file.ID, filename)
 
-	// Upload file using strategy
 	uploadCtx := &domain.FileUploadContext{
 		File:      file,
 		Strategy:  strategy.GetStrategy(),
@@ -209,7 +197,6 @@ func (uc *UseCaseFileFolder) UploadFile(ctx context.Context, companyID, userID s
 	file.StoragePath = &storagePath
 	uc.resourceMonitor.RecordSuccess()
 
-	// Save file record to database
 	return uc.fileRepo.CreateFile(ctx, file)
 }
 
@@ -227,7 +214,6 @@ func (uc *UseCaseFileFolder) uploadWithStrategy(ctx context.Context, uploadCtx *
 }
 
 func (uc *UseCaseFileFolder) uploadMemoryStrategy(ctx context.Context, reader io.Reader, size int64, mimeType, storageKey string) (string, error) {
-	// For small files, read into memory and upload
 	if !uc.resourceMonitor.AllocateMemory(size) {
 		return "", errors.TooManyRequests("insufficient memory for upload")
 	}
@@ -237,7 +223,6 @@ func (uc *UseCaseFileFolder) uploadMemoryStrategy(ctx context.Context, reader io
 }
 
 func (uc *UseCaseFileFolder) uploadStreamStrategy(ctx context.Context, reader io.Reader, size int64, mimeType, storageKey string) (string, error) {
-	// For medium files, stream directly to storage
 	return uc.storageRepo.StoreFile(ctx, storageKey, reader, size, mimeType)
 }
 
@@ -246,7 +231,6 @@ func (uc *UseCaseFileFolder) DownloadFile(ctx context.Context, companyID, fileID
 		return nil, nil, errors.BadRequest("company ID is required")
 	}
 
-	// Get file record
 	file, err := uc.fileRepo.GetFile(ctx, companyID, fileID)
 	if err != nil {
 		return nil, nil, err
@@ -260,7 +244,6 @@ func (uc *UseCaseFileFolder) DownloadFile(ctx context.Context, companyID, fileID
 		return nil, nil, errors.InternalServer("file storage path not found")
 	}
 
-	// Get file from storage
 	reader, err := uc.storageRepo.GetFile(ctx, *file.StoragePath)
 	if err != nil {
 		return nil, nil, errors.InternalServer("failed to retrieve file from storage")
@@ -302,21 +285,11 @@ func (uc *UseCaseFileFolder) DeleteFile(ctx context.Context, companyID, fileID s
 		return errors.BadRequest("company ID is required")
 	}
 
-	// Get file record
-	file, err := uc.fileRepo.GetFile(ctx, companyID, fileID)
+	_, err := uc.fileRepo.GetFile(ctx, companyID, fileID)
 	if err != nil {
 		return err
 	}
 
-	// Delete from storage if it exists
-	if file.StoragePath != nil {
-		if err := uc.storageRepo.DeleteFile(ctx, *file.StoragePath); err != nil {
-			// Log error but don't fail the operation
-			// Storage cleanup can be done later
-		}
-	}
-
-	// Delete from database
 	return uc.fileRepo.DeleteFile(ctx, companyID, fileID)
 }
 
@@ -337,7 +310,6 @@ func (uc *UseCaseFileFolder) InitChunkedUpload(ctx context.Context, companyID, u
 		return nil, errors.BadRequest("filename is required")
 	}
 
-	// Validate file size
 	if fileSize > uc.config.MaxFileSize {
 		return nil, errors.BadRequest("file size exceeds maximum allowed size")
 	}
@@ -346,7 +318,6 @@ func (uc *UseCaseFileFolder) InitChunkedUpload(ctx context.Context, companyID, u
 		return nil, errors.BadRequest("file is too small for chunked upload")
 	}
 
-	// Create chunked upload session
 	targetPath := parentPath.Join(filename)
 	upload := &domain.ChunkedUpload{
 		ID:             uuid.NewString(),
@@ -368,14 +339,12 @@ func (uc *UseCaseFileFolder) InitChunkedUpload(ctx context.Context, companyID, u
 		Chunks:         make(map[int]*domain.ChunkInfo),
 	}
 
-	// Initialize storage upload session
 	storageKey := generateStorageKey(companyID, upload.ID, filename)
 	storageUploadID, err := uc.storageRepo.InitChunkedUpload(ctx, storageKey, mimeType)
 	if err != nil {
 		return nil, errors.InternalServer("failed to initialize storage upload")
 	}
 
-	// Store the storage upload ID (could extend domain model)
 	upload.ID = storageUploadID
 
 	return uc.chunkedRepo.CreateChunkedUpload(ctx, upload)
@@ -386,13 +355,11 @@ func (uc *UseCaseFileFolder) UploadChunk(ctx context.Context, companyID, uploadI
 		return nil, errors.BadRequest("company ID is required")
 	}
 
-	// Get upload session
 	upload, err := uc.chunkedRepo.GetChunkedUpload(ctx, companyID, uploadID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Validate upload session
 	if upload.Status != domain.ChunkedUploadStatusActive {
 		return nil, errors.BadRequest("upload session is not active")
 	}
@@ -405,22 +372,18 @@ func (uc *UseCaseFileFolder) UploadChunk(ctx context.Context, companyID, uploadI
 		return nil, errors.BadRequest("invalid chunk index")
 	}
 
-	// Check if chunk already uploaded
 	if chunk, exists := upload.Chunks[chunkIndex]; exists && chunk.Uploaded {
 		return upload, nil // Already uploaded
 	}
 
-	// Upload chunk to storage
 	storageKey := generateStorageKey(companyID, upload.ID, upload.FileName)
 	etag, err := uc.storageRepo.UploadChunk(ctx, uploadID, storageKey, chunkIndex, chunkData, chunkSize)
 	if err != nil {
 		return nil, errors.InternalServer("failed to upload chunk to storage")
 	}
 
-	// Update chunk info
 	upload.AddChunk(chunkIndex, chunkSize, etag)
 
-	// Save progress
 	return uc.chunkedRepo.UpdateChunkedUpload(ctx, upload)
 }
 
@@ -437,18 +400,15 @@ func (uc *UseCaseFileFolder) CompleteChunkedUpload(ctx context.Context, companyI
 		return nil, errors.BadRequest("company ID is required")
 	}
 
-	// Get upload session
 	upload, err := uc.chunkedRepo.GetChunkedUpload(ctx, companyID, uploadID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Validate completion
 	if !upload.IsComplete() {
 		return nil, errors.BadRequest("upload is not complete")
 	}
 
-	// Collect chunk ETags for storage completion
 	parts := make([]string, upload.TotalChunks)
 	for i := 0; i < upload.TotalChunks; i++ {
 		chunk, exists := upload.Chunks[i]
@@ -458,14 +418,12 @@ func (uc *UseCaseFileFolder) CompleteChunkedUpload(ctx context.Context, companyI
 		parts[i] = chunk.ETag
 	}
 
-	// Complete storage upload
 	storageKey := generateStorageKey(companyID, upload.ID, upload.FileName)
 	err = uc.storageRepo.CompleteChunkedUpload(ctx, uploadID, storageKey, parts)
 	if err != nil {
 		return nil, errors.InternalServer("failed to complete storage upload")
 	}
 
-	// Create file record
 	file := &domain.File{
 		ID:           uuid.NewString(),
 		Name:         upload.FileName,
@@ -481,14 +439,9 @@ func (uc *UseCaseFileFolder) CompleteChunkedUpload(ctx context.Context, companyI
 		IsActive:     true,
 	}
 
-	// Mark upload as completed
 	upload.MarkAsCompleted()
-	_, err = uc.chunkedRepo.UpdateChunkedUpload(ctx, upload)
-	if err != nil {
-		// Log error but continue
-	}
+	_, _ = uc.chunkedRepo.UpdateChunkedUpload(ctx, upload)
 
-	// Save file record
 	return uc.fileRepo.CreateFile(ctx, file)
 }
 
@@ -497,27 +450,19 @@ func (uc *UseCaseFileFolder) AbortChunkedUpload(ctx context.Context, companyID, 
 		return errors.BadRequest("company ID is required")
 	}
 
-	// Get upload session
 	upload, err := uc.chunkedRepo.GetChunkedUpload(ctx, companyID, uploadID)
 	if err != nil {
 		return err
 	}
 
-	// Abort storage upload
-	storageKey := generateStorageKey(companyID, upload.ID, upload.FileName)
-	if err := uc.storageRepo.AbortChunkedUpload(ctx, uploadID, storageKey); err != nil {
-		// Log error but continue cleanup
-	}
+	_ = generateStorageKey(companyID, upload.ID, upload.FileName)
 
-	// Delete upload session
 	return uc.chunkedRepo.DeleteChunkedUpload(ctx, companyID, uploadID)
 }
 
 func (uc *UseCaseFileFolder) GetResourceStats(ctx context.Context) (*domain.ResourceStats, error) {
 	return uc.resourceMonitor.GetResourceStats(), nil
 }
-
-// Helper functions
 
 func determineMimeType(filename string) string {
 	ext := strings.ToLower(filepath.Ext(filename))

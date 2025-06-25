@@ -53,7 +53,6 @@ func (r *RepositoryChunkedUpload) GetChunkedUpload(ctx context.Context, companyI
 		return nil, pkgErrors.Database("unable to get chunked upload session")
 	}
 
-	// Parse paths
 	parentPath, err := domain.NewPath(parentPathStr)
 	if err != nil {
 		return nil, pkgErrors.Database("invalid parent path")
@@ -66,7 +65,6 @@ func (r *RepositoryChunkedUpload) GetChunkedUpload(ctx context.Context, companyI
 	}
 	upload.TargetPath = targetPath
 
-	// Initialize chunks map
 	upload.Chunks = make(map[int]*domain.ChunkInfo)
 
 	return &upload, nil
@@ -127,7 +125,6 @@ func (r *RepositoryChunkedUpload) GetUploadProgress(ctx context.Context, uploadI
 		return nil, pkgErrors.Database("unable to get upload progress")
 	}
 
-	// Parse paths
 	parentPath, err := domain.NewPath(parentPathStr)
 	if err != nil {
 		return nil, pkgErrors.Database("invalid parent path")
@@ -140,7 +137,6 @@ func (r *RepositoryChunkedUpload) GetUploadProgress(ctx context.Context, uploadI
 	}
 	upload.TargetPath = targetPath
 
-	// Parse chunks JSON
 	upload.Chunks = make(map[int]*domain.ChunkInfo)
 
 	if chunksJSON != "[]" {
@@ -173,7 +169,6 @@ func (r *RepositoryChunkedUpload) GetUploadProgress(ctx context.Context, uploadI
 }
 
 func (r *RepositoryChunkedUpload) CleanupExpiredUploads(ctx context.Context) error {
-	// First get expired uploads to clean up storage
 	rows, err := r.db.QueryContext(ctx, QueryGetExpiredUploads)
 	if err != nil {
 		return pkgErrors.Database("unable to get expired uploads")
@@ -198,7 +193,6 @@ func (r *RepositoryChunkedUpload) CleanupExpiredUploads(ctx context.Context) err
 		expiredUploads = append(expiredUploads, upload)
 	}
 
-	// Delete from database
 	_, err = r.db.ExecContext(ctx, QueryCleanupExpiredUploads)
 	if err != nil {
 		return pkgErrors.Database("unable to cleanup expired uploads")
@@ -207,7 +201,6 @@ func (r *RepositoryChunkedUpload) CleanupExpiredUploads(ctx context.Context) err
 	return nil
 }
 
-// Helper method to check if we need to create the chunks table
 func (r *RepositoryChunkedUpload) EnsureChunksTable(ctx context.Context) error {
 	createTableSQL := `
 	CREATE TABLE IF NOT EXISTS upload_chunks (
